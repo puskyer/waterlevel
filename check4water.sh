@@ -17,7 +17,7 @@ sensor=$HOSTNAME
 
 ###### Start of functions
 
-waterlevelP() {
+redwatersensorP() {
 while read line  < /dev/ttyS1 ; do
 
         nowTime=$(date +%s)
@@ -58,7 +58,7 @@ done
 
 }
 
-raindropP()
+raindropsensorP()
 {
 while read  level line < /dev/ttyS1 ; do
 
@@ -101,16 +101,17 @@ done
 
 #### start of code
 
+
 case "$sensor" in
-  raindrop )
-	stty -F /dev/ttyS1 9600 -parity cs8
-	mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $(date)!" -t stat/waterlevel/ -u $user -P $pass
-        raindropP
+  raindropsensor )
+        stty -F /dev/ttyS1 9600 -parity cs8
+	      mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/ -u $user -P $pass
+        raindropsensorP
         ;;
-  waterlevel )
-	stty -F /dev/ttyS1 9600 -parity cs8
-        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $(date)!" -t stat/waterlevel/ -u $user -P $pass
-	waterlevelP
+  redwatersensor )
+	      stty -F /dev/ttyS1 9600 -parity cs8
+        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/ -u $user -P $pass
+        redwatersensorP
         ;;
  * )
         mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "$HOSTNAME not a sensor" -t stat/waterlevel/ -u $user -P $pass
