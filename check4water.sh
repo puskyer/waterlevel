@@ -105,12 +105,12 @@ done
 case "$sensor" in
   raindropsensor )
         stty -F /dev/ttyS1 9600 -parity cs8
-	      mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/ -u $user -P $pass
+        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/$sensor -u $user -P $pass
         raindropsensorP
         ;;
   redwatersensor )
-	      stty -F /dev/ttyS1 9600 -parity cs8
-        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/ -u $user -P $pass
+        stty -F /dev/ttyS1 9600 -parity cs8
+        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/$sensor -u $user -P $pass
         redwatersensorP
         ;;
  * )

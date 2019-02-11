@@ -6,9 +6,9 @@ void setup() {
 }
  
 void loop() {
- sensorValue = analogRead(analogInPin); 
- Serial.print("Sensor = " ); 
- Serial.print(sensorValue*100/1024); 
- Serial.println("%");
+ int sensorValue = analogRead(analogInPin); 
+ // Serial.print("WaterLevel = " ); 
+ Serial.println(sensorValue*100/1024); 
+ //Serial.println("");
  delay(1000); 
 }
