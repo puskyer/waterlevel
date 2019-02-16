@@ -25,14 +25,16 @@ while read line  < /dev/ttyS1 ; do
 
 #	echo -n "nowTime=$nowTime     startTime=$startTime"
 
-        if [ "$line" -ge "20" -a "$water" == "no" ] ; then
+        if [ "$line" -ge "25" -a "$water" == "no" ] ; then
                 # get the time we started
                 startTime=$(date +%s)
-                python /$HOME/sendemail.py /$HOME/pasquale.conf
-                python /$HOME/sendemail.py /$HOME/jacinthe.conf
+                #python /$HOME/sendemail.py /$HOME/pasquale.conf
+                #python /$HOME/sendemail.py /$HOME/jacinthe.conf
                 # logger -s -t waterlevel -p 6 "Check water Level via Camera! Level @ $line% Time is `date +%R`"
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
                 water=yes
-        # if water is present and its been 5 minutes then lets send another email
+ 
+       # if water is present and its been 5 minutes then lets send another email
         elif [ "$water" == "yes" ] && [ $(expr $nowTime - $startTime) -ge $waitTime ] ; then
                 water=no
         # if the water is now gone clear water flag
@@ -40,13 +42,13 @@ while read line  < /dev/ttyS1 ; do
                 water=no
         fi
 
-	if [ "$line" -lt "40" ] && [ "$line" -ge "20" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
-	elif [ "$line" -ge "40" ] ; then
+	if [ "$line" -ge "50" ] ; then
 		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water level RISING now @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+	elif [ "$line" -ge "25" ] ; then
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
 	fi
 
-	if [ $cycleCount -eq 60 ] ; then
+	if [ "$cycleCount" -eq "60" ] ; then
 		cycleCount=0
 		 if [ "$line" -lt "5" ] ; then
                     mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water NOT present level is $line" -t stat/waterlevel/$sensor -u $user -P $pass
