@@ -31,7 +31,7 @@ while read line  < /dev/ttyS1 ; do
                 #python /$HOME/sendemail.py /$HOME/pasquale.conf
                 #python /$HOME/sendemail.py /$HOME/jacinthe.conf
                 # logger -s -t waterlevel -p 6 "Check water Level via Camera! Level @ $line% Time is `date +%R`"
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
                 water=yes
  
        # if water is present and its been 5 minutes then lets send another email
@@ -43,19 +43,34 @@ while read line  < /dev/ttyS1 ; do
         fi
 
 	if [ "$line" -ge "50" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water level RISING now @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "Water level RISING now @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		sleep 4
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "ON" -t cmnd/BilgePump/POWER -u $user -P $pass
+		BilgePump="on"
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "BilgePump on!" -t stat/waterlevel/$sensor -u $user -P $pass
 	elif [ "$line" -ge "25" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		sleep 4
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "ON" -t cmnd/BilgePump/POWER -u $user -P $pass
+		BilgePump="on"
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "BilgePump on!" -t stat/waterlevel/$sensor -u $user -P $pass
+
 	fi
 
 	if [ "$cycleCount" -eq "60" ] ; then
 		cycleCount=0
 		 if [ "$line" -lt "5" ] ; then
-                    mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water NOT present level is $line" -t stat/waterlevel/$sensor -u $user -P $pass
+                    mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "Water NOT present level is $line" -t stat/waterlevel/$sensor -u $user -P $pass
 		 fi
 	fi
 
         sleep 60
+
+	if [ "$BilgePump" == "on" ] ; then
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "OFF" -t cmnd/BilgePump/POWER -u $user -P $pass
+		BilgePump="off"
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r -m "BilgePump off!" -t stat/waterlevel/$sensor -u $user -P $pass
+	fi
 done
 
 }
@@ -75,7 +90,7 @@ while read line  < /dev/ttyS1 ; do
                 #python /$HOME/sendemail.py /$HOME/pasquale.conf
                 #python /$HOME/sendemail.py /$HOME/jacinthe.conf
                 # logger -s -t waterlevel -p 6 "Check water Level via Camera! Level @ $line% Time is `date +%R`"
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
                 water=yes
  
        # if water is present and its been 5 minutes then lets send another email
@@ -87,15 +102,15 @@ while read line  < /dev/ttyS1 ; do
         fi
 
 	if [ "$line" -ge "50" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water level RISING now @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water level RISING now @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
 	elif [ "$line" -ge "25" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water present @ $line%" -t stat/waterlevel/$sensor -u $user -P $pass
 	fi
 
 	if [ "$cycleCount" -eq "60" ] ; then
 		cycleCount=0
 		 if [ "$line" -lt "5" ] ; then
-                    mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water NOT present level is $line" -t stat/waterlevel/$sensor -u $user -P $pass
+                    mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water NOT present level is $line" -t stat/waterlevel/$sensor -u $user -P $pass
 		 fi
 	fi
 
@@ -130,15 +145,15 @@ while read  level line < /dev/ttyS1 ; do
         fi
 
 	if [ "$line" == "AVERAGE" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water present level is $level" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water present level is $level" -t stat/waterlevel/$sensor -u $user -P $pass
 	elif [ "$line" == "LOW" ] ; then
-		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water level RISING level is $level" -t stat/waterlevel/$sensor -u $user -P $pass
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water level RISING level is $level" -t stat/waterlevel/$sensor -u $user -P $pass
 	fi
 
 	if [ $cycleCount -eq 60 ] ; then
 		cycleCount=0
 		 if [ "$line" == "HIGH" ] ; then
-                    mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water NOT present level is $level" -t stat/waterlevel/$sensor -u $user -P $pass
+                    mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water NOT present level is $level" -t stat/waterlevel/$sensor -u $user -P $pass
 		 fi
 	fi
         sleep 60
@@ -152,15 +167,15 @@ done
 case "$sensor" in
   raindropsensor )
         stty -F /dev/ttyS1 9600 -parity cs8
-        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/$sensor -u $user -P $pass
+        mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/$sensor -u $user -P $pass
         raindropsensorP
         ;;
   redwatersensor )
         stty -F /dev/ttyS1 9600 -parity cs8
-        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/$sensor -u $user -P $pass
+        mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "Water Level check started on $sensor at $(date)!" -t stat/waterlevel/$sensor -u $user -P $pass
         redwatersensorP
         ;;
  * )
-        mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -m "$HOSTNAME not a sensor" -t stat/waterlevel/ -u $user -P $pass
+        mosquitto_pub -h $mqttSRV -p $mqttPort -q 2 -r  -m "$HOSTNAME not a sensor" -t stat/waterlevel/ -u $user -P $pass
         ;;
 esac
