@@ -29,6 +29,11 @@ if [ "$CkPing1" == "$reply1" ] ; then
 	# DNS issues
 	if [ "$Response" == "OFF" ; then	# if PowR2 is off turn it on
 		PowR2_ON
+	else
+		# maybe Xplornet device needs to be restarted
+		mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -r -m "OFF" -t cmnd/$sensor/POWER -u $user -P $pass
+		sleep 30
+		PowR2_ON
 	fi
 elif [ "$CkPing2" == "$reply2" ]
 	then
@@ -46,6 +51,10 @@ else
 		echo "$CkPing1"
 		echo "$CkPing2"
 		echo "$Response"
+		# lets try rebooting Xplornet device
+                mosquitto_pub -h $mqttSRV -p $mqttPort -q 0 -r -m "OFF" -t cmnd/$sensor/POWER -u $user -P $pass
+                sleep 30
+                PowR2_ON
         fi
 fi
 
