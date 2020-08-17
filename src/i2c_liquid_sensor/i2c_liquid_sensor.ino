@@ -141,12 +141,11 @@ void receiveData(int bytecount){
 }
 
 void sendData(){
-      for (int i=0; i < data_received_count; i++){
+      for (int i=0; i < sizeof(data_send); i++){
         Serial.print("data_send ");
         Serial.println(data_send[i],HEX);
-        Wire.write(data_send[i]);
       }
-      data_received_count = 1;
+        Wire.write(data_send, sizeof(data_send));
 }
 
 // Restarts program from beginning but does not reset the peripherals and registers
