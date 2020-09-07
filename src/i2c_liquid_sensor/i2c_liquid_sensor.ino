@@ -11,6 +11,10 @@
 * See <http://www.gnu.org/licenses/> for details.
 * All above must be included in any redistribution
 * ****************************************************/
+/*
+ *  modified to work with Onion Omega R1 and Adruino Dock v1
+ */
+
 #include <Arduino.h>
 #include <avr/wdt.h>
 #include <Wire.h>
@@ -57,10 +61,13 @@ void setup() {
     delay(500);
     
     Serial.println("Start I2C communication ready");
-      // initialize the Liquid Sensor pin as an input.
+      // initialize the Liquid Sensor pins as an input.
     pinMode(liqSHpin,INPUT);
-    Serial.print("Liquid Sensor pin is ");
+    Serial.print("Liquid Sensor High pin is ");
     Serial.println(liqSHpin);
+    pinMode(liqSHpin,INPUT);
+    Serial.print("Liquid Sensor Low pin is ");
+    Serial.println(liqSLpin);
     
       // initialize the led pin as an output.
     pinMode(led0, OUTPUT);  
