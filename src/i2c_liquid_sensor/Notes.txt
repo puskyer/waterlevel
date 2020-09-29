@@ -1,0 +1,25 @@
+sump pump water Level conditions
+
+pin 5 - High level    # Highest water level when 1 turn on pump
+pin 6 - Low level     # lowest water level when 0 turn off pump
+
+
+possible states
+
+Pump on         1  # both sensors high we need to empty the container
+High level      1
+Low Level       1
+
+"pump off" water rising or "pump on" water is being emptied.
+pump on         1    Pump is empting container  
+pump off        0    pump is waiting for High level to become 1 to start empting container
+High level      0    (for a short period this would have been a 1 until we emptied some of the water.)
+Low Level       1
+
+pump off        0     once both sensors 0 then we can turn off pump
+High level      0
+Low Level       0     (for a short time this would have been a 1 until we empty some more water)
+
+not possible based on position of sensors Low level will always be 1 if High level becomes 1.
+High level      1
+Low Level       0

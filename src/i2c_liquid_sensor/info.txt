@@ -1,0 +1,22 @@
+    Using I2C in a Sketch Right now the Onion Library joins the I2C bus with an address of 
+    0x08 and listens for a write of 0xde 0xad (get it? 'dead' ha ha ha) when resetting. If 
+    you need a Sketch to use I2C, make sure to build this functionality into your I2C 
+    handling to comply with the Arduino Dock flashing procedure.
+This has a few implications: Since the Arduino can only join the I2C bus as a master (using 
+    Wire.begin()) or a slave (using Wire.begin(<i2c-addr>)) the above statement REQUIRES the 
+    Arduino to join the I2C bus as a slave using Wire.begin(0x08) Since it is required from 
+    the above that the Arduino lists for a write from the Omega of 0xde 0xad it is necessary 
+    to know what action the Arduino should take when it receives this message. From gleaning 
+    the code in 
+    https://github.com/OnionIoT/Onion-Arduino-Library/blob/master/Onion/OnionLibrary.cpp it 
+    is found that the code to be executed on the Arduino on receipt of this message is: 
+    wdt_enable(WDTO_15MS); It would be extremely helpful if this was described in the 
+    documentation. Because the Arduino HAS TO BE an I2C slave on address 0x08 as above, it 
+    is not possible for it to be an I2C master and control other I2C devices. This is not 
+    necessarily a big deal since the Omega can still use I2C to access any Arduino I2C 
+    shields that may be plugged into the Arduino Dock But again, it would be helpful if this 
+    was clear in the documentation Note that sending the 0xde 0xad message from the Omega to 
+    the Arduino can be performed by the following call to the code in 
+    https://github.com/OnionIoT/i2c-exp-driver/blob/master/src/lib/onion-i2c.c in the 
+    https://github.com/OnionIoT/i2c-exp-driver library:
+    i2c_write(0, 0x08, 0xde, 0xad);
