@@ -38,6 +38,10 @@ byte Liquid_High_level=0;       // variable that will change from 0 to 1 for hig
 int liqSLpin = 6;               // pin for low side sensor
 byte Liquid_Low_level=0;        // variable that will change from 0 to 1 for low side
 
+int PRIpin = 7;                 // PRI pin High motion, low no motion
+#define PRIstatus 0x2           // High byte to tell Onion Omega that the Low byte is a PRI state
+byte PRIstate = 0;
+
 byte data_send[2] = {0,0};      // I2C - holds the sensor state high byte is the high level state, low byte is the low level state
 byte data_received[2] = {0,0};   // I2C - high byte hold the request to send or both bytes 0xde 0xad to reset code.
 byte data_received_count = 0;    // number of I2C bytes received
@@ -80,26 +84,22 @@ void loop() {
 
   Liquid_High_level=digitalRead(liqSHpin);
   Liquid_Low_level=digitalRead(liqSLpin);
-
-// prepare to send status to Onion Omega
-  data_send[0] = Liquid_High_level;
-  data_send[1] = Liquid_Low_level;
-
-
-  if ( Liquid_Low_level = 0 ) {
-    // turnoff pump 
-    } else if ( (Liquid_Low_level = 1) && (Liquid_High_level = 0) ) {
-    // monitor if pump is on then lets wait until we need to turn it off liquid low level false (0)
-    // if pump is off then lets monitor until the liquid high level is true (1)  
-    } else if ( (Liquid_Low_level = 1) && (Liquid_High_level = 1) ) {
-    // turn on pump lets start emptying the container
+  PRIstate=digitalRead(PRIpin);
+  
+  if (( PRIstate = 0 ) || (Liquid_Low_level = 1) || (Liquid_High_level = 1)) {
+    // prepare to send status to Onion Omega
+    data_send[0] = Liquid_High_level;
+    data_send[1] = Liquid_Low_level;
+    } else if (PRIstate = 1) {
+     // prepare to send status to Onion Omega
+    data_send[0] = PRIstatus;
+    data_send[1] = PRIstate;
     }
 
     switch (data_received[0]) {
         case 1:
         //do something when data_recived is 1
-//          Serial.print("data_recived_count  ");
-//          Serial.println(data_received_count, HEX);
+
           Serial.print("Received command ");
           Serial.println(data_received[0], HEX);
           digitalWrite(led0, HIGH);   // turn the LED on (HIGH is the voltage level)
@@ -109,6 +109,9 @@ void loop() {
           Serial.print("Liquid Low level state is ");
           Serial.println(data_send[1],HEX);          
           data_received[0] = 0;
+          // prepare to send status to Onion Omega
+          data_send[0] = Liquid_High_level;
+          data_send[1] = Liquid_Low_level;
           break;
         case 2:
         //do something when data_recived is 2
@@ -121,6 +124,9 @@ void loop() {
           Serial.print("Liquid Low level state is ");
           Serial.println(data_send[1],HEX);
           data_received[0] = 0;
+           // prepare to send status to Onion Omega
+          data_send[0] = PRIstatus;
+          data_send[1] = PRIstate;          
           break;
         default:
           // if nothing else matches, do the default
@@ -148,18 +154,17 @@ void receiveData(int bytecount){
 }
 
 void sendData(){
+      Wire.write(data_send, sizeof(data_send));  
       for (int i=0; i < sizeof(data_send); i++){
         Serial.print("data_send ");
         Serial.println(data_send[i],HEX);
       }
-        Wire.write(data_send, sizeof(data_send));
 }
 
 // Restarts program from beginning but does not reset the peripherals and registers
 void _SoftwareReset() {
   wdt_enable(WDTO_15MS);
 } 
-
 
 // function that executes whenever data is received from master
 void receiveEvent(int arg) {

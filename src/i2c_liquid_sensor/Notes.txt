@@ -3,6 +3,10 @@ sump pump water Level conditions
 pin 5 - High level    # Highest water level when 1 turn on pump
 pin 6 - Low level     # lowest water level when 0 turn off pump
 
+Pin 7 - PRI sensors 
+when PRI pin high motion is sensed, wait once it goes low, 
+wait at least 300 Seconds before turning off light. this is all done at the onion Omega side using MQTT
+
 
 possible states
 

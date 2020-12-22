@@ -1,3 +1,5 @@
 bins
 smtp.conf
 waterlevel.conf
+config.json
+src/OnionOmega/config.json
